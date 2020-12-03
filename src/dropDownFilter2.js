@@ -2,53 +2,54 @@ import React, { useEffect, useState } from "react";
 
 import allData from "./data2";
 
-// import SelectSearch from "react-select-search";
 const DropDownFilter = () => {
-  const [bender, setBender] = useState(
-    JSON.parse(localStorage.getItem("bender")) || ""
-  );
-  const [nation, setNation] = useState(
-    JSON.parse(localStorage.getItem("nation")) || ""
-  );
-  const [person, setPerson] = useState(
-    JSON.parse(localStorage.getItem("person")) || ""
-  );
-  const [show, setShow] = useState(
-    JSON.parse(localStorage.getItem("show")) || ""
-  );
-  const [textSearch, setTextSearch] = useState();
+  const obj = {
+    bender: JSON.parse(localStorage.getItem("bender")) || "",
+    nation: JSON.parse(localStorage.getItem("nation")) || "",
+    person: JSON.parse(localStorage.getItem("person")) || "",
+    show: JSON.parse(localStorage.getItem("show")) || "",
+    textSearch: "",
+  };
+
+  const [filter, setFilter] = useState(obj);
   // eslint-disable-next-line no-unused-vars
   const [originalState, setOriginalState] = useState(allData);
   const [state, setState] = useState(allData);
 
-  //   const benderFilter = JSON.parse(localStorage.getItem("bender")) || "";
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const filterData = () => {
-    let benderData = bender
-      ? originalState.filter((x) => x.bender === bender)
+    let benderData = filter.bender
+      ? originalState.filter((x) => x.bender === filter.bender)
       : originalState;
-    let nationData = nation
-      ? benderData.filter((x) => x.nation === nation)
+    let nationData = filter.nation
+      ? benderData.filter((x) => x.nation === filter.nation)
       : benderData;
-    let personData = person
-      ? nationData.filter((x) => x.person === person)
+
+    let personData = filter.person
+      ? nationData.filter((x) => x.person === filter.person)
       : nationData;
-    let showData = show
-      ? personData.filter((x) => x.show === show)
+    let showData = filter.show
+      ? personData.filter((x) => x.show === filter.show)
       : personData;
-    const textSearchData = textSearch
-      ? showData.filter((x) => x.name.toLocaleLowerCase().includes(textSearch))
+    const textSearchData = filter.textSearch
+      ? showData.filter((x) =>
+          x.name.toLocaleLowerCase().includes(filter.textSearch)
+        )
       : showData;
-    console.log(textSearchData);
     setState(textSearchData);
+    // setFilter(textSearchData);
   };
 
   useEffect(() => {
     filterData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bender, nation, person, show, textSearch]);
-
+  }, [
+    filter.bender,
+    filter.nation,
+    filter.person,
+    filter.show,
+    filter.textSearch,
+  ]);
   let benderData = originalState.map((x) => x.bender);
   let uniqueBenderData = [...new Set(benderData)];
 
@@ -61,6 +62,14 @@ const DropDownFilter = () => {
   let showData = originalState.map((x) => x.show);
   let uniqueShowData = [...new Set(showData)];
 
+  const clearFilter = () => {
+    setFilter({});
+    localStorage.removeItem("bender");
+    localStorage.removeItem("person");
+    localStorage.removeItem("nation");
+    localStorage.removeItem("show");
+  };
+
   return (
     <div>
       <label>Bender</label>
@@ -68,14 +77,18 @@ const DropDownFilter = () => {
         name="bender"
         placeholder="Select"
         onChange={(e) => {
-          setBender(e.target.value);
+          setFilter({ ...filter, bender: e.target.value });
           localStorage.setItem([e.target.name], JSON.stringify(e.target.value));
         }}
       >
         <option value="">Select</option>
 
         {uniqueBenderData.map((x, index) => (
-          <option key={index} value={x} selected={bender === x ? true : false}>
+          <option
+            key={index}
+            value={x}
+            selected={filter.bender === x ? true : false}
+          >
             {x}
           </option>
         ))}
@@ -85,28 +98,38 @@ const DropDownFilter = () => {
       <select
         name="nation"
         onChange={(e) => {
-          setNation(e.target.value);
+          setFilter({ ...filter, nation: e.target.value });
           localStorage.setItem([e.target.name], JSON.stringify(e.target.value));
         }}
       >
         <option value="">Select</option>
+
         {uniqueNationData.map((x, index) => (
-          <option key={index} value={x} selected={nation === x ? true : false}>
+          <option
+            key={index}
+            value={x}
+            selected={filter.nation === x ? true : false}
+          >
             {x}
           </option>
         ))}
       </select>
+
       <label>Person</label>
       <select
         name="person"
         onChange={(e) => {
-          setPerson(e.target.value);
+          setFilter({ ...filter, person: e.target.value });
           localStorage.setItem([e.target.name], JSON.stringify(e.target.value));
         }}
       >
         <option value="">Select</option>
         {uniquePersonData.map((x, index) => (
-          <option key={index} value={x} selected={person === x ? true : false}>
+          <option
+            key={index}
+            value={x}
+            selected={filter.person === x ? true : false}
+          >
             {x}
           </option>
         ))}
@@ -115,22 +138,30 @@ const DropDownFilter = () => {
       <select
         name="show"
         onChange={(e) => {
-          setShow(e.target.value);
+          setFilter({ ...filter, show: e.target.value });
           localStorage.setItem([e.target.name], JSON.stringify(e.target.value));
         }}
       >
         <option value="">Select</option>
         {uniqueShowData.map((x, index) => (
-          <option key={index} value={x} selected={show === x ? true : false}>
+          <option
+            key={index}
+            value={x}
+            selected={filter.show === x ? true : false}
+          >
             {x}
           </option>
         ))}
       </select>
-
+      <button onClick={clearFilter}>Clear Filter</button>
+      <br />
       <input
         type="text"
         onChange={(e) =>
-          setTextSearch(e.target.value.toLocaleLowerCase().trim())
+          setFilter({
+            ...filter,
+            textSearch: e.target.value.toLocaleLowerCase().trim(),
+          })
         }
       />
 
@@ -156,33 +187,3 @@ const DropDownFilter = () => {
 };
 
 export default DropDownFilter;
-//add button after textbox if NO data available
-
-//------------------------------------
-//--------------------------------
-// let benderData = bender
-//   ? originalState.filter((x) => x.bender === bender)
-//   : originalState;
-// console.log("---->", benderData);
-// setState(benderData);
-// console.log("State", state);
-// let nationData = nation
-//   ? state.filter((x) => x.nation === nation)
-//   : benderData;
-// setState(nationData);
-// let personData = person ? state.filter((x) => x.person === person) : state;
-// setState(personData);
-// let showData = show ? state.filter((x) => x.show === show) : state;
-// setState(showData);
-// const textSearchData = textSearch
-//   ? state.filter((x) => x.name.includes(textSearch))
-//   : state;
-// setState(textSearchData);
-//---------------------------
-// let final = originalState.filter((x) => {
-//   return bender
-//     ? x.bender === bender
-//     : x || nation
-//     ? x.nation === nation
-//     : x;
-// });
